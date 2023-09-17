@@ -69,4 +69,9 @@ export class AuthService {
     );
     return token;
   }
+
+  generateProductKey(email: string, userType: UserType) {
+    const string = `${email}-${userType}-${process.env.PRODUCT_KEY_SECRET}}`;
+    return { key: bcrypt.hashSync(string, 10) };
+  }
 }
