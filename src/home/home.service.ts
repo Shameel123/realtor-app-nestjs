@@ -112,7 +112,6 @@ export class HomeService {
     }: CreateHomeParams,
     userId: number,
   ) {
-    console.log({ userId });
     const home = await this.prismaService.home.create({
       data: {
         address,

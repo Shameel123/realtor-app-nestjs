@@ -8,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { HomeService } from './home.service';
 import { CreateHomeDTO, HomeResponseDTO, UpdateHomeDTO } from './dto/home.dto';
@@ -49,8 +48,7 @@ export class HomeController {
     return this.homeService.getHomeById(id);
   }
 
-  @Roles(UserType.REALTOR, UserType.ADMIN)
-  @UseGuards(AuthGuard)
+  @Roles(UserType.BUYER)
   @Post()
   postHome(@Body() body: CreateHomeDTO, @User() user: UserDecodedTokenType) {
     return this.homeService.createHome(body, user.id);
