@@ -154,6 +154,12 @@ export class HomeService {
     if (!home) {
       throw new NotFoundException('No home found');
     }
+    const doesUserOwnHome = home.realtor_id === userId;
+
+    if (!doesUserOwnHome) {
+      throw new NotFoundException('You are not authorized to update this home');
+    }
+
     const updatedHome = await this.prismaService.home.update({
       where: { id },
       data: {
@@ -164,7 +170,7 @@ export class HomeService {
         land_size: landSize,
         propertyType,
         price,
-        realtor_id: 6,
+        realtor_id: userId,
       },
     });
     return new HomeResponseDTO(updatedHome);

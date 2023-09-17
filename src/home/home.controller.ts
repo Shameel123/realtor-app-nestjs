@@ -57,7 +57,7 @@ export class HomeController {
     @Body() body: UpdateHomeDTO,
     @User() user: UserDecodedTokenType,
   ) {
-    return this.homeService.updateHome(id, body, user.id);
+    return this.homeService.updateHome(id, body, user?.id);
   }
 
   @Delete(':id')
