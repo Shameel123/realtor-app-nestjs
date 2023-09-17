@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { HomeResponseDTO } from './dto/home.dto';
+import { CreateHomeDTO, HomeResponseDTO } from './dto/home.dto';
 import { PropertyType } from '@prisma/client';
 
 interface GetHomesParams {
@@ -10,11 +10,22 @@ interface GetHomesParams {
   PropertyType?: PropertyType;
 }
 
+interface CreateHomeParams {
+  address: string;
+  city: string;
+  price: number;
+  propertyType: PropertyType;
+  landSize: number;
+  images: { url: string }[];
+  numberOfBedrooms: number;
+  numberOfBathrooms: number;
+}
+
 @Injectable()
 export class HomeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
   async getHomes(filters: GetHomesParams): Promise<HomeResponseDTO[]> {
-    const homes = await this.prisma.home.findMany({
+    const homes = await this.prismaService.home.findMany({
       select: {
         id: true,
         address: true,
@@ -54,7 +65,7 @@ export class HomeService {
   }
 
   async getHomeById(id: number): Promise<HomeResponseDTO> {
-    const home = await this.prisma.home.findUnique({
+    const home = await this.prismaService.home.findUnique({
       where: { id },
       select: {
         id: true,
@@ -85,6 +96,38 @@ export class HomeService {
       throw new NotFoundException('No home found');
     }
     delete home.realtor;
+    return new HomeResponseDTO(home);
+  }
+
+  async createHome({
+    address,
+    numberOfBathrooms,
+    numberOfBedrooms,
+    city,
+    landSize,
+    propertyType,
+    price,
+    images,
+  }: CreateHomeParams) {
+    const home = await this.prismaService.home.create({
+      data: {
+        address,
+        number_of_bathrooms: numberOfBathrooms,
+        number_of_bedrooms: numberOfBedrooms,
+        city,
+        land_size: landSize,
+        propertyType,
+        price,
+        realtor_id: 6,
+      },
+    });
+    const homeImages = images.map((image) => {
+      return { ...image, homeId: home.id };
+    });
+    await this.prismaService.image.createMany({
+      data: homeImages,
+    });
+
     return new HomeResponseDTO(home);
   }
 }
