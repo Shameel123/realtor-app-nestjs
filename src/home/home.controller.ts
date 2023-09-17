@@ -8,11 +8,14 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { HomeService } from './home.service';
 import { CreateHomeDTO, HomeResponseDTO, UpdateHomeDTO } from './dto/home.dto';
-import { PropertyType } from '@prisma/client';
+import { PropertyType, UserType } from '@prisma/client';
 import { User, UserDecodedTokenType } from 'src/user/decorators/user.decorator';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { Roles } from 'src/decorators/roles.decorators';
 
 @Controller('home')
 export class HomeController {
@@ -46,11 +49,14 @@ export class HomeController {
     return this.homeService.getHomeById(id);
   }
 
+  @Roles(UserType.REALTOR, UserType.ADMIN)
+  @UseGuards(AuthGuard)
   @Post()
   postHome(@Body() body: CreateHomeDTO, @User() user: UserDecodedTokenType) {
     return this.homeService.createHome(body, user.id);
   }
 
+  @Roles(UserType.REALTOR, UserType.ADMIN)
   @Put(':id')
   putHomeId(
     @Param('id', ParseIntPipe) id: number,
@@ -60,6 +66,7 @@ export class HomeController {
     return this.homeService.updateHome(id, body, user?.id);
   }
 
+  @Roles(UserType.REALTOR, UserType.ADMIN)
   @Delete(':id')
   deleteHomeId(@Param('id', ParseIntPipe) id: number) {
     return this.homeService.deleteHome(id);
