@@ -82,4 +82,11 @@ export class AuthService {
       productKey: hash,
     };
   }
+
+  async getMe(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    return user;
+  }
 }
