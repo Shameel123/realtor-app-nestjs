@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateHomeDTO, HomeResponseDTO } from './dto/home.dto';
+import { HomeResponseDTO, UpdateHomeDTO } from './dto/home.dto';
 import { PropertyType } from '@prisma/client';
 
 interface GetHomesParams {
@@ -129,5 +129,57 @@ export class HomeService {
     });
 
     return new HomeResponseDTO(home);
+  }
+
+  async updateHome(
+    id: number,
+    {
+      address,
+      numberOfBathrooms,
+      numberOfBedrooms,
+      city,
+      landSize,
+      propertyType,
+      price,
+    }: UpdateHomeDTO,
+  ) {
+    const home = await this.prismaService.home.findUnique({
+      where: { id },
+    });
+    if (!home) {
+      throw new NotFoundException('No home found');
+    }
+    const updatedHome = await this.prismaService.home.update({
+      where: { id },
+      data: {
+        address,
+        number_of_bathrooms: numberOfBathrooms,
+        number_of_bedrooms: numberOfBedrooms,
+        city,
+        land_size: landSize,
+        propertyType,
+        price,
+        realtor_id: 6,
+      },
+    });
+    return new HomeResponseDTO(updatedHome);
+  }
+
+  async deleteHome(id: number) {
+    const home = await this.prismaService.home.findUnique({
+      where: { id },
+    });
+    if (!home) {
+      throw new NotFoundException('No home found');
+    }
+
+    await this.prismaService.image.deleteMany({
+      where: { homeId: id },
+    });
+
+    await this.prismaService.home.delete({
+      where: { id },
+    });
+    return { message: 'Home deleted successfully' };
   }
 }

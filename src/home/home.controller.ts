@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { HomeService } from './home.service';
-import { CreateHomeDTO, HomeResponseDTO } from './dto/home.dto';
+import { CreateHomeDTO, HomeResponseDTO, UpdateHomeDTO } from './dto/home.dto';
 import { PropertyType } from '@prisma/client';
 
 @Controller('home')
@@ -51,12 +51,15 @@ export class HomeController {
   }
 
   @Put(':id')
-  putHomeId(@Param('id') id: string) {
-    return `Welcome to the home page ${id}!`;
+  putHomeId(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateHomeDTO,
+  ) {
+    return this.homeService.updateHome(id, body);
   }
 
   @Delete(':id')
-  deleteHomeId(@Param('id') id: string) {
-    return `Welcome to the home page ${id}!`;
+  deleteHomeId(@Param('id', ParseIntPipe) id: number) {
+    return this.homeService.deleteHome(id);
   }
 }
