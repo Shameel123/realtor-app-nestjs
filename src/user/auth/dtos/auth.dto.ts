@@ -24,3 +24,13 @@ export class SignupDto {
   @MinLength(8)
   password: string;
 }
+
+export class SigninDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @MinLength(8)
+  password: string;
+}
