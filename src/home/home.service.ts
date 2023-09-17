@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { HomeResponseDTO, UpdateHomeDTO } from './dto/home.dto';
 import { PropertyType } from '@prisma/client';
+import { UserDecodedTokenType } from 'src/user/decorators/user.decorator';
 
 interface GetHomesParams {
   city?: string;
@@ -193,24 +194,66 @@ export class HomeService {
     return { message: 'Home deleted successfully' };
   }
 
+  async inquireHome(
+    buyer: UserDecodedTokenType,
+    homeId: number,
+    message: string,
+  ) {
+    const realtor = await this.getRealtorByHomeId(homeId);
+    const newMessage = await this.prismaService.message.create({
+      data: {
+        realtorId: realtor.id,
+        homeId: homeId,
+        buyerId: buyer.id,
+        message: message,
+      },
+    });
+
+    return newMessage;
+  }
+
+  async getMessagesByHome(user: UserDecodedTokenType, homeId: number) {
+    const realtor = await this.getRealtorByHomeId(Number(homeId));
+    if (realtor.id !== user.id) {
+      throw new NotFoundException('You are not authorized to view this home');
+    }
+    const messages = await this.prismaService.message.findMany({
+      where: {
+        homeId: Number(homeId),
+      },
+      select: {
+        message: true,
+        buyer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+    return messages;
+  }
+
   // Author used this to validate but I used a different approach to update the home.
-  //   async getRealtorByHomeId(id: number) {
-  //     const home = await this.prismaService.home.findUnique({
-  //       where: { id },
-  //       select: {
-  //         realtor: {
-  //           select: {
-  //             id: true,
-  //             name: true,
-  //             email: true,
-  //             phone: true,
-  //           },
-  //         },
-  //       },
-  //     });
-  //     if (!home) {
-  //       throw new NotFoundException('No home found');
-  //     }
-  //     return home.realtor;
-  //   }
+  async getRealtorByHomeId(id: number) {
+    const home = await this.prismaService.home.findUnique({
+      where: { id },
+      select: {
+        realtor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+    if (!home) {
+      throw new NotFoundException('No home found');
+    }
+    return home.realtor;
+  }
 }

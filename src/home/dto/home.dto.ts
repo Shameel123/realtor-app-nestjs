@@ -132,3 +132,9 @@ export class UpdateHomeDTO {
   @IsPositive()
   numberOfBathrooms?: number;
 }
+
+export class HomeInquiryDTO {
+  @IsString()
+  @IsNotEmpty()
+  message: string;
+}
